@@ -57,6 +57,10 @@ except:
     print("connect refused error!")
     exit(0)
 
+# 新文件
+newfile = str(tcpClient.getsockname()[1]) + ".txt"
+
+
 # 文本分块
 while True:
     up_text = int(input("块最大位（文本总共1364位，但为了不丢失数据尽量最不能超过1000位）："))
@@ -85,6 +89,7 @@ tcpClient.send(pack("1", N, ''))  # 发送数据给服务端
 serverData = tcpClient.recv(limit_data)  # 接收来自服务端的数据
 low = 0
 high = 0
+reverse_data=[]
 for i in range(N):
     high += p_length_list[i]
     text = p[low:high].encode()
@@ -94,9 +99,16 @@ for i in range(N):
         tcpClient.send(data)  # 发送数据给服务端
         serverData = tcpClient.recv(limit_data)  # 接收来自服务端的数据
         show_data = serverData[20:].decode('utf-8')
+        reverse_data.append(show_data)
         print("第{0}块：{1}".format(i + 1, show_data))
     except socket.timeout:
         print(f" {i + 1}： request time out.")
 
 #关闭套接字
+for i in range(N-1,-1,-1):
+    with open(newfile, 'a') as file:
+        file.write(reverse_data[i])
+with open(newfile, 'r', encoding='utf-8') as file:
+    text = file.read()
+print(text)
 tcpClient.close()
